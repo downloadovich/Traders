@@ -14,7 +14,7 @@ BOT_TOKEN = "8303374569:AAFxxm5BcHVA894hMFPvIbuYS-lsPLorc0U"
 GROUP_CHAT_ID = "-4667941192"  
 
 # ID администратора (ваш Telegram ID)
-ADMIN_ID = 1855791379  
+ADMIN_IDS = [1855791379, 5203998307]  
 
 # ========== ДОБАВЛЕНО: УЛУЧШЕННАЯ РЕФЕРАЛЬНАЯ СИСТЕМА ==========
 # Статистика реферальных ссылок
@@ -109,7 +109,7 @@ async def send_ref_links_to_admin(context: ContextTypes.DEFAULT_TYPE):
         
         if not ref_stats:
             await context.bot.send_message(
-                chat_id=ADMIN_ID,
+                chat_id=admin_id,
                 text="📭 Нет созданных реферальных ссылок.\n\n"
                      "Создайте новую ссылку командой:\n"
                      "/newref - создать ссылку 'Трафик N'\n"
@@ -136,18 +136,19 @@ async def send_ref_links_to_admin(context: ContextTypes.DEFAULT_TYPE):
             "/reflist - список ссылок\n"
         )
         
-        await context.bot.send_message(
-            chat_id=ADMIN_ID,
-            text=links_message,
-            parse_mode="Markdown"
-        )
-        logger.info(f"Отправлено {len(ref_stats)} реферальных ссылок администратору")
+        for admin_id in ADMIN_IDS:
+            try:
+                await context.bot.send_message(
+                    chat_id=admin_id,
+                    text=links_message,
+                    parse_mode="Markdown"
+                )
     except Exception as e:
         logger.error(f"Ошибка отправки ссылок админу: {e}")
 
 async def handle_newref_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Создание новой реферальной ссылки"""
-    if update.effective_user.id != ADMIN_ID:
+    if update.effective_user.id not in ADMIN_IDS:
         await update.message.reply_text("⛔️ Эта команда только для администратора.")
         return
     
@@ -184,7 +185,7 @@ async def handle_newref_command(update: Update, context: ContextTypes.DEFAULT_TY
 
 async def handle_reflist_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Показывает список всех ссылок с ID"""
-    if update.effective_user.id != ADMIN_ID:
+    if update.effective_user.id not in ADMIN_IDS:
         return
     
     try:
@@ -210,7 +211,7 @@ async def handle_reflist_command(update: Update, context: ContextTypes.DEFAULT_T
 
 async def handle_refreset_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Сброс статистики конкретной ссылки или всех"""
-    if update.effective_user.id != ADMIN_ID:
+    if update.effective_user.id not in ADMIN_IDS:
         return
     
     try:
@@ -245,7 +246,7 @@ async def handle_refreset_command(update: Update, context: ContextTypes.DEFAULT_
 
 async def handle_refdelete_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Удаление реферальной ссылки"""
-    if update.effective_user.id != ADMIN_ID:
+    if update.effective_user.id not in ADMIN_IDS:
         return
     
     try:
@@ -268,7 +269,7 @@ async def handle_refdelete_command(update: Update, context: ContextTypes.DEFAULT
 
 async def handle_refstats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /refstats - статистика реферальных ссылок (только для админа)"""
-    if update.effective_user.id != ADMIN_ID:
+    if update.effective_user.id not in ADMIN_IDS:
         await update.message.reply_text("⛔️ Эта команда только для администратора.")
         return
     
@@ -314,7 +315,7 @@ async def handle_refstats_command(update: Update, context: ContextTypes.DEFAULT_
 
 async def handle_refexport_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Экспорт детальной статистики"""
-    if update.effective_user.id != ADMIN_ID:
+    if update.effective_user.id not in ADMIN_IDS:
         return
     
     try:
@@ -726,7 +727,7 @@ def main():
     print("   1. GROUP_CHAT_ID на ID вашей группы")
     print("   2. ADMIN_ID на ваш Telegram ID (можно узнать у @userinfobot)")
     print(f"   Текущий ID группы: {GROUP_CHAT_ID}")
-    print(f"   Текущий ID админа: {ADMIN_ID}")
+    print(f"   Текущий ID админа: {ADMIN_IDS}")
     
     application = Application.builder().token(BOT_TOKEN).build()
     
