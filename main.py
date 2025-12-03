@@ -102,19 +102,24 @@ def create_new_traffic_link(custom_name=None):
     return link_id, name
 
 async def send_ref_links_to_admin(context: ContextTypes.DEFAULT_TYPE):
-    """Отправляет все реферальные ссылки администратору"""
+    """Отправляет все реферальные ссылки администраторам"""
     try:
         bot_info = await context.bot.get_me()
         bot_username = bot_info.username
         
         if not ref_stats:
-            await context.bot.send_message(
-                chat_id=admin_id,
-                text="📭 Нет созданных реферальных ссылок.\n\n"
-                     "Создайте новую ссылку командой:\n"
-                     "/newref - создать ссылку 'Трафик N'\n"
-                     "/newref [название] - создать ссылку с кастомным названием"
-            )
+            # Отправляем всем админам сообщение о пустом списке
+            for admin_id in ADMIN_IDS:
+                try:
+                    await context.bot.send_message(
+                        chat_id=admin_id,
+                        text="📭 Нет созданных реферальных ссылок.\n\n"
+                             "Создайте новую ссылку командой:\n"
+                             "/newref - создать ссылку 'Трафик N'\n"
+                             "/newref [название] - создать ссылку с кастомным названием"
+                    )
+                except Exception as e:
+                    logger.error(f"Ошибка отправки пустого списка админу {admin_id}: {e}")
             return
         
         links_message = f"🔗 **Реферальные ссылки ({len(ref_stats)} шт.):**\n\n"
@@ -136,6 +141,8 @@ async def send_ref_links_to_admin(context: ContextTypes.DEFAULT_TYPE):
             "/reflist - список ссылок\n"
         )
         
+        # Отправляем ВСЕМ админам
+        success_count = 0
         for admin_id in ADMIN_IDS:
             try:
                 await context.bot.send_message(
@@ -143,8 +150,14 @@ async def send_ref_links_to_admin(context: ContextTypes.DEFAULT_TYPE):
                     text=links_message,
                     parse_mode="Markdown"
                 )
+                success_count += 1
+            except Exception as e:
+                logger.error(f"Ошибка отправки ссылок админу {admin_id}: {e}")
+        
+        logger.info(f"Отправлено {len(ref_stats)} реферальных ссылок {success_count}/{len(ADMIN_IDS)} администраторам")
+        
     except Exception as e:
-        logger.error(f"Ошибка отправки ссылок админу: {e}")
+        logger.error(f"Ошибка отправки ссылок админам: {e}")
 
 async def handle_newref_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Создание новой реферальной ссылки"""
@@ -725,9 +738,9 @@ def main():
     
     print("⚠️  НЕ ЗАБУДЬТЕ ЗАМЕНИТЬ:")
     print("   1. GROUP_CHAT_ID на ID вашей группы")
-    print("   2. ADMIN_ID на ваш Telegram ID (можно узнать у @userinfobot)")
+    print("   2. ADMIN_IDS на Telegram ID админов")
     print(f"   Текущий ID группы: {GROUP_CHAT_ID}")
-    print(f"   Текущий ID админа: {ADMIN_IDS}")
+    print(f"   Текущие ID админов: {ADMIN_IDS}")
     
     application = Application.builder().token(BOT_TOKEN).build()
     
