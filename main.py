@@ -10,7 +10,7 @@ import re
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-BOT_TOKEN = "8303374569:AAFxxm5BcHVA894hMFPvIbuYS-lsPLorc0U"
+BOT_TOKEN = "8575359061:AAFxu8WcygthKFbMePzCgoYN3XeVhN-E4Kg"
 GROUP_CHAT_ID = "-4667941192"  
 
 # ID администратора (ваш Telegram ID)
